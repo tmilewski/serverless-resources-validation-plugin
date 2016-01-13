@@ -24,7 +24,8 @@
   },
   "homepage": "https://github.com/tmilewski/serverless-resources-validate-pluginreadme",
   "dependencies": {
-    "bluebird": "^3.1.1"
+    "bluebird": "^3.1.1",
+    "aws-sdk": "^2.2.29"
   },
   "devDependencies": {
     "serverless": "0.0.15"
