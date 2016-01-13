@@ -106,7 +106,7 @@ usage: serverless resources validate`,
 
       return new BbPromise(function(resolve, reject) {
         let cloudformation = new AWS.CloudFormation({ region: _this.evt.region });
-        let buf = new Buffer(fs.readFileSync('./../cloudformation/resources-cf.json'));
+        let buf = new Buffer(fs.readFileSync('./cloudformation/resources-cf.json'));
 
         let params = {
           TemplateBody: buf.toString()

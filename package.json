@@ -1,6 +1,6 @@
 {
   "name": "serverless-resources-validation-plugin",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Serverless Resources Validation Plugin - Validates resources-cf.json",
   "main": "src/index.js",
   "scripts": {
