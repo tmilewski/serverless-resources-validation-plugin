@@ -3,7 +3,7 @@
 A Serverless Plugin for the [Serverless Framework](http://www.serverless.com) which adds an action to validate your CloudFormation template.
 
 [![npm version](https://badge.fury.io/js/serverless-resources-validation-plugin.svg)](https://badge.fury.io/js/serverless-resources-validation-plugin)
-[![Dependencies Status](https://david-dm.org/joostfarla/serverless-cors-plugin.svg)](https://david-dm.org/tmilewski/serverless-resources-validation-plugin)
+[![Dependency Status](https://david-dm.org/tmilewski/serverless-resources-validation-plugin.svg)](https://david-dm.org/tmilewski/serverless-resources-validation-plugin)
 [![DevDependencies Status](https://david-dm.org/joostfarla/serverless-cors-plugin/dev-status.svg)](https://david-dm.org/tmilewski/serverless-resources-validation-plugin#info=devDependencies)
 
 ## Introduction
