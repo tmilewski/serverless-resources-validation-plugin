@@ -105,11 +105,12 @@ usage: serverless resources validate`,
       let _this = this;
 
       return new BbPromise(function(resolve, reject) {
-        let cloudformation = new AWS.CloudFormation({ region: _this.evt.region });
-        let buf = new Buffer(fs.readFileSync('./cloudformation/resources-cf.json'));
+        let cloudformation     = new AWS.CloudFormation({ region: _this.evt.region }),
+            projResoucesCfPath = path.join(_this.S._projectRootPath, 'cloudformation', 'resources-cf.json'),
+            cfTemplate         = new Buffer(fs.readFileSync(projResoucesCfPath));
 
         let params = {
-          TemplateBody: buf.toString()
+          TemplateBody: cfTemplate.toString()
         }
 
         cloudformation.validateTemplate(params, function (err, data) {
