@@ -1,14 +1,14 @@
 {
-  "name": "serverless-resources-validate-plugin",
+  "name": "serverless-resources-validation-plugin",
   "version": "0.1.0",
-  "description": "Serverless Resources Validation Plugin - Validates resources-cf.json against Amazon's CF requirements",
+  "description": "Serverless Resources Validation Plugin - Validates resources-cf.json",
   "main": "src/index.js",
   "scripts": {
     "test": ""
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:tmilewski/serverless-resources-validate-plugingit"
+    "url": "git@github.com:tmilewski/serverless-resources-validation-plugin.git"
   },
   "keywords": [
     "serverless",
@@ -20,9 +20,9 @@
   "author": "Tom Milewski <tmilewski@gmail.com>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/tmilewski/serverless-resources-validate-plugin/issues"
+    "url": "https://github.com/tmilewski/serverless-resources-validation-plugin/issues"
   },
-  "homepage": "https://github.com/tmilewski/serverless-resources-validate-pluginreadme",
+  "homepage": "https://github.com/tmilewski/serverless-resources-validation-pluginreadme",
   "dependencies": {
     "bluebird": "^3.1.1",
     "aws-sdk": "^2.2.29"
