@@ -10,25 +10,16 @@ A Serverless Plugin for the [Serverless Framework](http://www.serverless.com) wh
 
 This plugins does the following:
 
-* Validates your CloudFormation template (resources-cf.json) directly against Amazon's parameters.
+* Validates your CloudFormation template directly against Amazon's parameters.
 
 ## Installation
 
-Make sure you have a `package.json` file in your `plugins` dir. If it's not there, run `npm init` to generate one.
-
-From your `plugins` dir, run:
-
-```bash
-npm install --save serverless-resources-validation-plugin
+* Go to the root of your Serverless Project
+* Run `npm install serverless-resources-validation-plugin --save`
+* In your Project's `s-project.json`, in the `plugins` property, add the npm name of your recently added plugin to the array, like this:
 ```
-
-Add the plugin to `s-project.json`:
-
-```json
-"plugins": [
-  {
-    "path": "serverless-resources-validation-plugin"
-  }
+plugins: [ 
+   'serverless-optimize-plugin'
 ]
 ```
 
