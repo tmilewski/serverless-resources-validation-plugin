@@ -1,4 +1,3 @@
-/*jshint strict:true,  node:true, esversion:6 */
 'use strict';
 
 /**
