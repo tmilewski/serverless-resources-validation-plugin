@@ -1,7 +1,7 @@
 {
   "name": "serverless-resources-validation-plugin",
-  "version": "0.1.1",
-  "description": "Serverless Resources Validation Plugin - Validates resources-cf.json",
+  "version": "0.2.0",
+  "description": "Serverless Resources (CloudFormation) Validation Plugin",
   "main": "src/index.js",
   "scripts": {
     "test": ""
