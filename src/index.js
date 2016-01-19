@@ -1,47 +1,49 @@
 'use strict';
 
 /**
- * Serverless CloudFormation Validation Plugin
+ * Action: ResourcesValidate
+ * - Validates the appropriate CloudFormation template via AWS
  */
 
 module.exports = function(SPlugin, serverlessPath) {
-  const AWS       = require('aws-sdk'),
-        BbPromise = require('bluebird'),
-        fs        = require('fs'),
-        path      = require('path'),
-        SCli      = require(path.join(serverlessPath, 'utils/cli')),
-        SError    = require(path.join(serverlessPath, 'ServerlessError'));
+
+  const AWS    = require('aws-sdk'),
+    BbPromise  = require('bluebird'),
+    path       = require('path'),
+    SCli       = require(path.join(serverlessPath, 'utils/cli')),
+    SError     = require(path.join(serverlessPath, 'ServerlessError'));
 
   class ResourcesValidate extends SPlugin {
 
     /**
-     * Define plugin name
+     * Define your plugin's name
      */
 
     static getName() {
-      return 'com.tmilewski.' + ResourcesValidate.name;
+      return 'serverless.tmilewski.' + ResourcesValidate.name;
     }
 
     /**
-     * Register actions with Serverless
+     * @returns {Promise} upon completion of all registrations
      */
 
     registerActions() {
       this.S.addAction(this.resourcesValidate.bind(this), {
         handler:       'resourcesValidate',
-        description:   `Validates resources-cf.json for 
+        description:   `Validate AWS CloudFormation resources.
 usage: serverless resources validate`,
         context:       'resources',
         contextAction: 'validate',
         options:       [
           {
-            option:      'stage',
-            shortcut:    's',
-            description: 'Optional if only one stage is defined in project'
-          }, {
             option:      'region',
             shortcut:    'r',
-            description: 'Optional - Target one region to deploy to'
+            description: 'region you want to deploy to'
+          },
+          {
+            option:      'stage',
+            shortcut:    's',
+            description: 'stage you want to deploy to'
           }
         ]
       });
@@ -50,81 +52,132 @@ usage: serverless resources validate`,
     }
 
     /**
-     * Run through validation process
+     * Action
      */
 
-    resourcesValidate(event) {
-      let _this = this,
-          evt   = {};
+    resourcesValidate(evt) {
+      let _this    = this;
+      _this.evt    = evt;
 
-      // If CLI - parse options
-      if (_this.S.cli) {
+      return _this._prompt()
+        .bind(_this)
+        .then(_this._validateAndPrepare)
+        .then(_this._validateResources)
+        .then(function() {
 
-        // Options
-        evt = JSON.parse(JSON.stringify(this.S.cli.options)); // Important: Clone objects, don't refer to them
-      }
+          /**
+           * Return EVT
+           */
 
-      // If NO-CLI, add options
-      if (event) evt = event;
+          return _this.evt;
+        });
+    }
+    
+    /**
+     * Prompt
+     */
 
-      // Add defaults
-      evt.stage = evt.stage ? evt.stage : null;
+    _prompt() {
+      let _this = this;
 
-      _this.evt = evt;
+      // Skip if non-interactive or stage is provided
+      if (!_this.S.config.interactive || (_this.evt.options.stage && _this.evt.options.region)) return BbPromise.resolve();
 
-      return BbPromise.try(function() {
-        if (_this.S._interactive) {
-          SCli.asciiGreeting();
-        }
-      })
-      .bind(_this)
-      .then(function() {
-        return _this.cliPromptSelectStage('Choose a Stage: ', _this.evt.stage, false)
-            .then(stage => {
-              _this.evt.stage = stage;
-            })
-      })
-      .then(function() {
-        return _this.cliPromptSelectRegion('Choose a Region in this Stage: ', false, true, _this.evt.region, _this.evt.stage)
+      return _this.cliPromptSelectStage('Which stage are you deploying to: ', _this.evt.options.stage, false)
+        .then(stage => {
+          _this.evt.options.stage = stage;
+          BbPromise.resolve();
+        })
+        .then(function(){
+          return _this.cliPromptSelectRegion('Which region are you deploying to: ', false, true, _this.evt.options.region, _this.evt.options.stage)
             .then(region => {
-              _this.evt.region = region;
-            })
-      })
-      .then(_this._validate)
-      .then(function() {
-        SCli.log('Resource Validator: Successful for ' + _this.evt.stage + ' on ' + _this.evt.region);
-        return _this.evt;
-      });
+              _this.evt.options.region = region;
+              BbPromise.resolve();
+            });
+        });
     }
 
     /**
-     * Validate resources-cf.json
+     * Validate & Prepare
      */
 
-    _validate() {
+    _validateAndPrepare() {
+
       let _this = this;
 
-      return new BbPromise(function(resolve, reject) {
-        let cloudformation     = new AWS.CloudFormation({ region: _this.evt.region }),
-            projResoucesCfPath = path.join(_this.S._projectRootPath, 'cloudformation', 'resources-cf.json'),
-            cfTemplate         = new Buffer(fs.readFileSync(projResoucesCfPath));
+      // Non interactive validation
+      if (!_this.S.config.interactive) {
 
-        let params = {
-          TemplateBody: cfTemplate.toString()
+        // Check API Keys
+        if (!_this.S._awsProfile) {
+          if (!_this.S.config.awsAdminKeyId || !_this.S.config.awsAdminSecretKey) {
+            return BbPromise.reject(new SError('Missing AWS Profile and/or API Key and/or AWS Secret Key'));
+          }
         }
 
-        cloudformation.validateTemplate(params, function (err, data) {
-          if (err) {
-            throw new SError(err, SError.errorCodes.INVALID_PROJECT_SERVERLESS);
-          }
+        // Check Params
+        if (!_this.evt.options.stage || !_this.evt.options.region) {
+          return BbPromise.reject(new SError('Missing stage and/or region and/or key'));
+        }
+      }
 
-          return resolve();
+      // Validate stage: make sure stage exists
+      if (!_this.S.state.validateStageExists(_this.evt.options.stage) && _this.evt.options.stage != 'local') {
+        return BbPromise.reject(new SError('Stage ' + _this.evt.options.stage + ' does not exist in your project'));
+      }
+
+      // Validate region: make sure region exists in stage
+      if (!_this.S.state.validateRegionExists(_this.evt.options.stage, _this.evt.options.region)) {
+        return BbPromise.reject(new SError('Region "' + _this.evt.options.region + '" does not exist in stage "' + _this.evt.options.stage + '"'));
+      }
+    }
+
+    /**
+     * Validate CloudFormation Resources
+     */
+
+    _validateResources() {
+      let _this = this;
+
+      _this.cfTemplate = _this.S.state.getResources({
+        populate: true,
+        stage:    _this.evt.options.stage,
+        region:   _this.evt.options.region
+      });
+
+      return BbPromise.try(function() {
+        SCli.log('Validating resources to stage "'
+          + _this.evt.options.stage
+          + '" and region "'
+          + _this.evt.options.region
+          + '" via Cloudformation.');
+
+        // Start spinner
+        _this._spinner = SCli.spinner();
+        _this._spinner.start();
+
+        return new BbPromise(function(resolve, reject) {
+          let cloudformation = new AWS.CloudFormation({ region: _this.evt.options.region });
+          let params = {
+            TemplateBody: JSON.stringify(_this.cfTemplate)
+          };
+
+          cloudformation.validateTemplate(params, function (err, data) {
+             _this._spinner.stop(true);
+
+            if (err) {
+              throw new SError(err, SError.errorCodes.INVALID_PROJECT_SERVERLESS);
+            }
+
+            SCli.log('Resource Validator: Successful on "' + _this.evt.options.stage + '" in "' + _this.evt.options.region + '"');
+            return resolve();
+          });
         });
       });
     }
   }
 
-  return ResourcesValidate;
-}
+  return( ResourcesValidate );
+};
 
 

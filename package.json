@@ -1,7 +1,7 @@
 {
   "name": "serverless-resources-validation-plugin",
-  "version": "0.1.2",
-  "description": "Serverless Resources Validation Plugin - Validates resources-cf.json",
+  "version": "0.2.0",
+  "description": "Serverless Resources (CloudFormation) Validation Plugin",
   "main": "src/index.js",
   "scripts": {
     "test": ""
@@ -25,9 +25,9 @@
   "homepage": "https://github.com/tmilewski/serverless-resources-validation-pluginreadme",
   "dependencies": {
     "bluebird": "^3.1.1",
-    "aws-sdk": "^2.2.29"
+    "aws-sdk": "^2.2.30"
   },
   "devDependencies": {
-    "serverless": "0.0.15"
+    "serverless": "0.1.1"
   }
 }
