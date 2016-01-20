@@ -19,7 +19,7 @@ This plugins does the following:
 * In your Project's `s-project.json`, in the `plugins` property, add the npm name of your recently added plugin to the array, like this:
 ```
 plugins: [ 
-   'serverless-optimize-plugin'
+   'serverless-resources-validation-plugin'
 ]
 ```
 
