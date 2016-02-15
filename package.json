@@ -1,6 +1,6 @@
 {
   "name": "serverless-resources-validation-plugin",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Serverless Resources (CloudFormation) Validation Plugin",
   "main": "src/index.js",
   "scripts": {
@@ -28,6 +28,6 @@
     "aws-sdk": "^2.2.30"
   },
   "devDependencies": {
-    "serverless": "0.1.1"
+    "serverless": "0.4.2"
   }
 }
