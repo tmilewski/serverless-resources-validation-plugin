@@ -139,45 +139,46 @@ usage: serverless resources validate`,
     _validateResources() {
       let _this = this;
 
-      _this.cfTemplate = _this.S.state.getResources({
+      return _this.S.state.getResources({
         populate: true,
         stage:    _this.evt.options.stage,
         region:   _this.evt.options.region
-      });
+      })
+      .then(function(resources) {
+        return BbPromise.try(function() {
+          SCli.log('Validating resources to stage "'
+            + _this.evt.options.stage
+            + '" and region "'
+            + _this.evt.options.region
+            + '" via Cloudformation.');
 
-      return BbPromise.try(function() {
-        SCli.log('Validating resources to stage "'
-          + _this.evt.options.stage
-          + '" and region "'
-          + _this.evt.options.region
-          + '" via Cloudformation.');
+          // Start spinner
+          _this._spinner = SCli.spinner();
+          _this._spinner.start();
 
-        // Start spinner
-        _this._spinner = SCli.spinner();
-        _this._spinner.start();
+          return new BbPromise(function(resolve, reject) {
+            let cloudformation = new AWS.CloudFormation({ region: _this.evt.options.region });
+            let params = {
+              TemplateBody: JSON.stringify(resources)
+            };
 
-        return new BbPromise(function(resolve, reject) {
-          let cloudformation = new AWS.CloudFormation({ region: _this.evt.options.region });
-          let params = {
-            TemplateBody: JSON.stringify(_this.cfTemplate)
-          };
+            cloudformation.validateTemplate(params, function (err, data) {
+               _this._spinner.stop(true);
 
-          cloudformation.validateTemplate(params, function (err, data) {
-             _this._spinner.stop(true);
+              if (err) {
+                throw new SError(err, SError.errorCodes.INVALID_PROJECT_SERVERLESS);
+              }
 
-            if (err) {
-              throw new SError(err, SError.errorCodes.INVALID_PROJECT_SERVERLESS);
-            }
+              SCli.log('Resource Validator: Successful on "' + _this.evt.options.stage + '" in "' + _this.evt.options.region + '"');
+              return resolve();
+            })
+          })
+        })
+      })
 
-            SCli.log('Resource Validator: Successful on "' + _this.evt.options.stage + '" in "' + _this.evt.options.region + '"');
-            return resolve();
-          });
-        });
-      });
+      return resolve()
     }
   }
 
   return( ResourcesValidate );
 };
-
-
